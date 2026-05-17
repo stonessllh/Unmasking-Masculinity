@@ -1,0 +1,58 @@
+{
+  "entities": {
+    "posts": {
+      "title": "Discussion Post",
+      "description": "An anonymous post exploring masculinity norms and personal struggles.",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string", "description": "The title of the post." },
+        "content": { "type": "string", "description": "The content body of the post." },
+        "authorId": { "type": "string", "description": "Anonymous UID of the author." },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Server timestamp of creation." },
+        "tags": { "type": "array", "items": { "type": "string" }, "description": "Optional category tags." }
+      },
+      "required": ["title", "content", "authorId", "createdAt"]
+    },
+    "replies": {
+      "title": "Post Reply",
+      "description": "An anonymous response to a discussion post.",
+      "type": "object",
+      "properties": {
+        "postId": { "type": "string", "description": "ID of the parent post." },
+        "content": { "type": "string", "description": "The response text." },
+        "authorId": { "type": "string", "description": "Anonymous UID of the respondent." },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Server timestamp of creation." }
+      },
+      "required": ["postId", "content", "authorId", "createdAt"]
+    },
+    "showcase": {
+      "title": "Showcase Item",
+      "description": "A research output, video or report shared with the community.",
+      "type": "object",
+      "properties": {
+        "type": { "type": "string", "enum": ["video", "report"], "description": "Type of asset." },
+        "title": { "type": "string", "description": "Title of the work." },
+        "description": { "type": "string", "description": "Detailed description." },
+        "url": { "type": "string", "description": "Link to the actual video or file." },
+        "thumbnail": { "type": "string", "description": "URL for the preview image." },
+        "authorId": { "type": "string", "description": "UID of the contributor." },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Timestamp." }
+      },
+      "required": ["type", "title", "description", "url", "authorId", "createdAt"]
+    }
+  },
+  "firestore": {
+    "posts/{postId}": {
+      "schema": "posts",
+      "description": "Collection of anonymous discussion posts."
+    },
+    "posts/{postId}/replies/{replyId}": {
+      "schema": "replies",
+      "description": "Subcollection of replies linked to a specific post."
+    },
+    "showcase/{showcaseId}": {
+      "schema": "showcase",
+      "description": "Public collection of research assets and videos."
+    }
+  }
+}
