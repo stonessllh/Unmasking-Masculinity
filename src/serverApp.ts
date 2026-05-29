@@ -46,7 +46,7 @@ const upload = multer({
 app.use("/uploads", express.static(uploaddir));
 
 // File upload route
-app.post("/api/upload", upload.single("file"), (req, res) => {
+app.post(["/api/upload", "/upload"], upload.single("file"), (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ error: "No file uploaded" });
@@ -60,7 +60,7 @@ app.post("/api/upload", upload.single("file"), (req, res) => {
 });
 
 // Gemini API Proxy Route
-app.post("/api/gemini/analyze", async (req, res) => {
+app.post(["/api/gemini/analyze", "/gemini/analyze"], async (req, res) => {
   try {
     const { content } = req.body;
     if (!content) {
@@ -93,7 +93,7 @@ app.post("/api/gemini/analyze", async (req, res) => {
     Keep your tone warm, supportive, and non-judgmental. Use English for your response.`;
 
     const result = await ai.models.generateContent({
-      model: "gemini-3-flash-preview",
+      model: "gemini-3.5-flash",
       contents: prompt,
     });
 
