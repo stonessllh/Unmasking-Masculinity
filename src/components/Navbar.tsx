@@ -33,7 +33,7 @@ export default function Navbar({ currentView, setView }: NavbarProps) {
         </div>
         
         <div className="flex gap-4 sm:gap-6 lg:gap-8">
-          {navItems.filter(item => item.alwaysShow || !isGuest).map((item) => (
+          {navItems.map((item) => (
             <button
               key={item.id}
               onClick={() => setView(item.id)}
@@ -52,26 +52,6 @@ export default function Navbar({ currentView, setView }: NavbarProps) {
             </button>
           ))}
         </div>
-
-        {!isGuest && (
-          <div className="flex items-center gap-4 pl-4 border-l border-white/10">
-            {user?.photoURL ? (
-              <img src={user.photoURL} alt="User" className="w-8 h-8 rounded-full border border-white/20" />
-            ) : (
-              <User className="w-5 h-5 text-slate-400" />
-            )}
-            <button 
-              onClick={() => {
-                signOut(auth);
-                setView('landing');
-              }}
-              className="p-2 hover:bg-white/5 rounded-full text-slate-400 hover:text-red-400 transition-colors"
-              title="Sign Out"
-            >
-              <LogOut className="w-5 h-5" />
-            </button>
-          </div>
-        )}
       </div>
     </nav>
   );

@@ -1,34 +1,8 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    
-    // Helper functions
-    function isSignedIn() {
-      return request.auth != null;
-    }
-
-    // --- Posts ---
-    match /posts/{postId} {
-      allow read: if true;
-      allow create: if isSignedIn() && request.resource.data.authorId == request.auth.uid;
-      allow delete: if isSignedIn() && resource.data.authorId == request.auth.uid;
-      allow update: if false;
-    }
-
-    // --- Replies (sub-collection) ---
-    match /posts/{postId}/replies/{replyId} {
-      allow read: if true;
-      allow create: if isSignedIn() && request.resource.data.authorId == request.auth.uid;
-      allow delete: if isSignedIn() && resource.data.authorId == request.auth.uid;
-      allow update: if false;
-    }
-
-    // --- Showcase ---
-    match /showcase/{itemId} {
-      allow read: if true;
-      allow create: if isSignedIn() && request.resource.data.authorId == request.auth.uid;
-      allow delete: if isSignedIn() && resource.data.authorId == request.auth.uid;
-      allow update: if false;
+    match /{document=**} {
+      allow read, write: if true;
     }
   }
 }

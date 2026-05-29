@@ -91,11 +91,10 @@ export const firestoreService = {
 
   createPost: async (postData: Omit<Post, 'id' | 'authorId' | 'createdAt'>) => {
     const path = 'posts';
-    if (!auth.currentUser) throw new Error("Auth required");
     try {
       return await addDoc(collection(db, path), {
         ...postData,
-        authorId: auth.currentUser.uid,
+        authorId: auth.currentUser?.uid || 'guest',
         createdAt: serverTimestamp(),
       });
     } catch (error) {
@@ -148,12 +147,11 @@ export const firestoreService = {
 
   createReply: async (postId: string, content: string) => {
     const path = `posts/${postId}/replies`;
-    if (!auth.currentUser) throw new Error("Auth required");
     try {
       return await addDoc(collection(db, 'posts', postId, 'replies'), {
         postId,
         content,
-        authorId: auth.currentUser.uid,
+        authorId: auth.currentUser?.uid || 'guest',
         createdAt: serverTimestamp(),
       });
     } catch (error) {
@@ -186,11 +184,10 @@ export const firestoreService = {
 
   createShowcaseItem: async (itemData: Omit<ShowcaseItem, 'id' | 'authorId' | 'createdAt'>) => {
     const path = 'showcase';
-    if (!auth.currentUser) throw new Error("Auth required");
     try {
       return await addDoc(collection(db, path), {
         ...itemData,
-        authorId: auth.currentUser.uid,
+        authorId: auth.currentUser?.uid || 'guest',
         createdAt: serverTimestamp(),
       });
     } catch (error) {

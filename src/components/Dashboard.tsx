@@ -159,7 +159,7 @@ export default function Dashboard() {
                   <span className="flex items-center gap-2">
                     <MessageCircle className="w-4 h-4" /> {language === 'zh' ? '查阅详请与回复' : 'View Details & Reply'}
                   </span>
-                  {auth.currentUser?.uid === post.authorId && (
+                  {(post.authorId === 'guest' || !auth.currentUser || auth.currentUser?.uid === post.authorId) && (
                     <button 
                       onClick={(e) => {
                         e.stopPropagation();

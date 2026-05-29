@@ -1,12 +1,18 @@
 import { ArrowRight, MessageCircle, PlayCircle, FileText, LogIn } from 'lucide-react';
-import { auth } from '../lib/firebase';
-import { GoogleAuthProvider, signInWithPopup, signInAnonymously } from 'firebase/auth';
-import { useState } from 'react';
 import { useLanguage } from '../lib/LanguageContext';
+import { auth } from '../lib/firebase';
+import { GoogleAuthProvider, signInWithPopup, signInAnonymously, onAuthStateChanged } from 'firebase/auth';
+import { useState, useEffect } from 'react';
 
 export default function LandingPage({ setView }: { setView: (v: any) => void }) {
   const [isLoggingIn, setIsLoggingIn] = useState(false);
+  const [currentUser, setCurrentUser] = useState(auth.currentUser);
   const { language, t } = useLanguage();
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, setCurrentUser);
+    return () => unsubscribe();
+  }, []);
 
   const handleLogin = async () => {
     setIsLoggingIn(true);
@@ -31,7 +37,7 @@ export default function LandingPage({ setView }: { setView: (v: any) => void }) 
     }
   };
 
-  const isGuest = !auth.currentUser;
+  const isGuest = !currentUser;
 
   return (
     <div className="space-y-24">
@@ -60,41 +66,18 @@ export default function LandingPage({ setView }: { setView: (v: any) => void }) 
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center pt-8">
-            {isGuest ? (
-              <>
-                <button 
-                  onClick={handleLogin}
-                  disabled={isLoggingIn}
-                  className="px-8 py-4 bg-white text-indigo-900 rounded-full flex items-center justify-center gap-2 hover:bg-slate-200 shadow-xl transition-all active:scale-95 font-bold cursor-pointer"
-                >
-                  <LogIn className="w-5 h-5" />
-                  {isLoggingIn ? 'Signing in...' : t('landing.enter_google')}
-                </button>
-                <button 
-                  onClick={handleAnonymousLogin}
-                  disabled={isLoggingIn}
-                  className="px-8 py-4 glass text-white hover:text-white rounded-full flex items-center justify-center gap-2 hover:bg-white/5 transition-colors font-medium border border-white/10 cursor-pointer"
-                >
-                  <LogIn className="w-5 h-5 opacity-60" />
-                  {t('landing.enter_anonymous')}
-                </button>
-              </>
-            ) : (
-              <>
-                <button 
-                  onClick={() => setView('showcase')}
-                  className="px-8 py-4 bg-indigo-600 text-white rounded-full flex items-center justify-center gap-2 hover:bg-indigo-500 shadow-[0_0_20px_rgba(79,70,229,0.3)] transition-all active:scale-95 cursor-pointer"
-                >
-                  {language === 'zh' ? '查看项目成果' : 'View Projects'} <ArrowRight className="w-4 h-4" />
-                </button>
-                <button 
-                  onClick={() => setView('dashboard')}
-                  className="px-8 py-4 glass text-white rounded-full flex items-center justify-center gap-2 hover:bg-white/5 transition-colors cursor-pointer"
-                >
-                  {language === 'zh' ? '进入讨论论坛' : 'Enter Community'} <MessageCircle className="w-4 h-4" />
-                </button>
-              </>
-            )}
+            <button 
+              onClick={() => setView('showcase')}
+              className="px-8 py-4 bg-indigo-600 text-white rounded-full flex items-center justify-center gap-2 hover:bg-indigo-500 shadow-[0_0_20px_rgba(79,70,229,0.3)] transition-all active:scale-95 cursor-pointer"
+            >
+              {language === 'zh' ? '查看项目成果' : 'View Projects'} <ArrowRight className="w-4 h-4" />
+            </button>
+            <button 
+              onClick={() => setView('dashboard')}
+              className="px-8 py-4 glass text-white rounded-full flex items-center justify-center gap-2 hover:bg-white/5 transition-colors cursor-pointer"
+            >
+              {language === 'zh' ? '进入讨论论坛' : 'Enter Community'} <MessageCircle className="w-4 h-4" />
+            </button>
           </div>
         </div>
       </section>
