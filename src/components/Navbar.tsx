@@ -2,6 +2,7 @@ import { Layout, MessageSquare, Shield, Info, Sparkles, LogOut, User } from 'luc
 import { motion } from 'motion/react';
 import { auth } from '../lib/firebase';
 import { signOut } from 'firebase/auth';
+import { useLanguage } from '../lib/LanguageContext';
 
 interface NavbarProps {
   currentView: string;
@@ -10,13 +11,14 @@ interface NavbarProps {
 
 export default function Navbar({ currentView, setView }: NavbarProps) {
   const user = auth.currentUser;
-  const isGuest = !user || user.isAnonymous;
+  const isGuest = !user;
+  const { t } = useLanguage();
 
   const navItems = [
-    { id: 'landing', label: 'Home', icon: Info, alwaysShow: true },
-    { id: 'showcase', label: 'Showcase', icon: Layout, alwaysShow: false },
-    { id: 'dashboard', label: 'Community', icon: MessageSquare, alwaysShow: false },
-    { id: 'assistant', label: 'AI Assistant', icon: Sparkles, alwaysShow: false },
+    { id: 'landing', label: t('nav.home'), icon: Info, alwaysShow: true },
+    { id: 'showcase', label: t('nav.showcase'), icon: Layout, alwaysShow: false },
+    { id: 'dashboard', label: t('nav.forum'), icon: MessageSquare, alwaysShow: false },
+    { id: 'assistant', label: t('nav.assistant'), icon: Sparkles, alwaysShow: false },
   ];
 
   return (

@@ -12,27 +12,35 @@ import Showcase from './components/Showcase';
 import Dashboard from './components/Dashboard';
 import Assistant from './components/Assistant';
 import { motion, AnimatePresence } from 'motion/react';
+import { useLanguage } from './lib/LanguageContext';
 
 export default function App() {
   const [view, setView] = useState<'landing' | 'showcase' | 'dashboard' | 'assistant'>('landing');
   const [user, setUser] = useState(auth.currentUser);
 
   const [authError, setAuthError] = useState<string | null>(null);
+  const { language, setLanguage } = useLanguage();
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (u) => {
-      if (u?.isAnonymous) {
-        signOut(auth);
-        setUser(null);
-      } else {
-        setUser(u);
-      }
+      setUser(u);
     });
     return () => unsubscribe();
   }, []);
 
   return (
-    <div className="min-h-screen mesh-bg text-slate-200 selection:bg-indigo-500 selection:text-white">
+    <div className="min-h-screen mesh-bg text-slate-200 selection:bg-indigo-500 selection:text-white relative">
+      {/* Floating Language Switcher */}
+      <div className="absolute top-8 right-8 z-[200]">
+        <button
+          onClick={() => setLanguage(language === 'en' ? 'zh' : 'en')}
+          className="px-4 py-2 text-xs font-bold uppercase tracking-wider glass hover:bg-white/10 active:scale-95 transition-all text-white border border-white/10 rounded-full flex items-center gap-2 shadow-lg shadow-black/25 cursor-pointer"
+        >
+          <span>🌐</span>
+          <span>{language === 'en' ? '中文 (ZH)' : 'English (EN)'}</span>
+        </button>
+      </div>
+
       {authError && (
         <div className="fixed top-24 left-1/2 -translate-x-1/2 z-[100] w-full max-w-xl px-4">
           <div className="glass bg-red-500/10 border-red-500/20 p-4 text-center text-sm text-red-400">
@@ -42,7 +50,7 @@ export default function App() {
       )}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 min-h-[calc(100vh-160px)]">
         <AnimatePresence mode="wait">
-          {(!user || user.isAnonymous || view === 'landing') && (
+          {(!user || view === 'landing') && (
             <motion.div
               key="landing"
               initial={{ opacity: 0, y: 20 }}
@@ -54,7 +62,7 @@ export default function App() {
             </motion.div>
           )}
 
-          {user && !user.isAnonymous && view === 'showcase' && (
+          {user && view === 'showcase' && (
             <motion.div
               key="showcase"
               initial={{ opacity: 0, y: 20 }}
@@ -66,7 +74,7 @@ export default function App() {
             </motion.div>
           )}
 
-          {user && !user.isAnonymous && view === 'dashboard' && (
+          {user && view === 'dashboard' && (
             <motion.div
               key="dashboard"
               initial={{ opacity: 0, y: 20 }}
@@ -78,7 +86,7 @@ export default function App() {
             </motion.div>
           )}
 
-          {user && !user.isAnonymous && view === 'assistant' && (
+          {user && view === 'assistant' && (
             <motion.div
               key="assistant"
               initial={{ opacity: 0, y: 20 }}

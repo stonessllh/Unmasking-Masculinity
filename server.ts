@@ -3,6 +3,8 @@ import path from "path";
 import { createServer as createViteServer } from "vite";
 import { GoogleGenAI } from "@google/genai";
 import dotenv from "dotenv";
+import multer from "multer";
+import fs from "fs";
 
 dotenv.config();
 
@@ -11,6 +13,49 @@ async function startServer() {
   const PORT = 3000;
 
   app.use(express.json());
+
+  // Ensure uploads directory exists
+  const uploaddir = path.join(process.cwd(), "uploads");
+  if (!fs.existsSync(uploaddir)) {
+    fs.mkdirSync(uploaddir, { recursive: true });
+  }
+
+  // Multer storage config
+  const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+      cb(null, uploaddir);
+    },
+    filename: (req, file, cb) => {
+      const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+      const ext = path.extname(file.originalname);
+      const baseName = path.basename(file.originalname, ext).replace(/[^a-zA-Z0-9]/g, "_");
+      cb(null, `${baseName}-${uniqueSuffix}${ext}`);
+    }
+  });
+
+  const upload = multer({
+    storage,
+    limits: {
+      fileSize: 100 * 1024 * 1024 // 100MB limit
+    }
+  });
+
+  // Serve static files from uploads directory
+  app.use("/uploads", express.static(uploaddir));
+
+  // File upload route
+  app.post("/api/upload", upload.single("file"), (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ error: "No file uploaded" });
+      }
+      const fileUrl = `/uploads/${req.file.filename}`;
+      res.json({ url: fileUrl, filename: req.file.filename, size: req.file.size });
+    } catch (error: any) {
+      console.error("Upload route error:", error);
+      res.status(500).json({ error: error?.message || "Failed to process uploaded file" });
+    }
+  });
 
   // Gemini API Proxy Route
   app.post("/api/gemini/analyze", async (req, res) => {
@@ -26,8 +71,14 @@ async function startServer() {
         return res.status(500).json({ error: "Gemini API key is not configured" });
       }
 
-      const genAI = new GoogleGenAI(apiKey);
-      const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+      const ai = new GoogleGenAI({
+        apiKey: apiKey,
+        httpOptions: {
+          headers: {
+            'User-Agent': 'aistudio-build',
+          }
+        }
+      });
 
       const prompt = `You are an empathetic psychological counselor helping male students explore the impact of masculinity norms on their emotions.
       The user shared this problem: "${content}"
@@ -39,11 +90,12 @@ async function startServer() {
       
       Keep your tone warm, supportive, and non-judgmental. Use English for your response.`;
 
-      const result = await model.generateContent(prompt);
-      if (!result || !result.response) {
-        throw new Error("Empty response from Gemini API");
-      }
-      const text = result.response.text();
+      const result = await ai.models.generateContent({
+        model: "gemini-3-flash-preview",
+        contents: prompt,
+      });
+
+      const text = result.text;
       console.log("Gemini Response success");
       res.json({ text });
     } catch (error: any) {
