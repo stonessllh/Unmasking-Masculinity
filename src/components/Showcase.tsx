@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Play, FileText, ExternalLink, Plus, X, Upload } from 'lucide-react';
+import { Play, FileText, ExternalLink, Plus, X, Upload, Trash2 } from 'lucide-react';
 import { firestoreService, ShowcaseItem } from '../lib/firestoreService';
 import { auth } from '../lib/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
@@ -292,16 +292,41 @@ export default function Showcase() {
               </div>
 
               <div className="px-8 pb-8 pt-2">
-                <button 
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setPreviewItem(item);
-                  }}
-                  className="flex items-center gap-2 text-sm font-medium text-indigo-400 hover:text-indigo-300 transition-colors group/btn cursor-pointer"
-                >
-                  {item.type === 'video' ? t('showcase.watch_now') : t('showcase.access_file')} 
-                  <ExternalLink className="w-4 h-4 transition-transform group-hover/btn:translate-x-1" />
-                </button>
+                <div className="flex justify-between items-center w-full">
+                  <button 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setPreviewItem(item);
+                    }}
+                    className="flex items-center gap-2 text-sm font-medium text-indigo-400 hover:text-indigo-300 transition-colors group/btn cursor-pointer"
+                  >
+                    {item.type === 'video' ? t('showcase.watch_now') : t('showcase.access_file')} 
+                    <ExternalLink className="w-4 h-4 transition-transform group-hover/btn:translate-x-1" />
+                  </button>
+
+                  {(item.authorId === 'guest' || !auth.currentUser || auth.currentUser?.uid === item.authorId) && (
+                    <button 
+                      onClick={async (e) => {
+                        e.stopPropagation();
+                        if (window.confirm(t('showcase.delete_confirm'))) {
+                          try {
+                            await firestoreService.deleteShowcaseItem(item.id);
+                            if (previewItem?.id === item.id) {
+                              setPreviewItem(null);
+                            }
+                          } catch (err) {
+                            console.error("Delete showcase item error:", err);
+                          }
+                        }
+                      }}
+                      className="p-2 text-rose-500/70 hover:text-rose-400 hover:bg-rose-500/10 rounded-xl transition-all cursor-pointer"
+                      title={t('showcase.delete_btn')}
+                      id={`delete-btn-${item.id}`}
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  )}
+                </div>
               </div>
             </motion.div>
           ))
@@ -364,9 +389,30 @@ export default function Showcase() {
                 </div>
 
                 <div className="w-full flex flex-col sm:flex-row justify-between items-center gap-4 mt-6">
-                  <p className="text-xs text-slate-500 italic font-mono uppercase tracking-widest">
-                    Secured Database Asset
-                  </p>
+                  <div className="flex items-center gap-3">
+                    <p className="text-xs text-slate-500 italic font-mono uppercase tracking-widest">
+                      Secured Database Asset
+                    </p>
+                    {(previewItem.authorId === 'guest' || !auth.currentUser || auth.currentUser?.uid === previewItem.authorId) && (
+                      <button 
+                        onClick={async () => {
+                          if (window.confirm(t('showcase.delete_confirm'))) {
+                            try {
+                              await firestoreService.deleteShowcaseItem(previewItem.id);
+                              setPreviewItem(null);
+                            } catch (err) {
+                              console.error("Delete error:", err);
+                            }
+                          }
+                        }}
+                        className="px-4 py-2 bg-rose-500/10 hover:bg-rose-500 hover:text-white border border-rose-500/20 text-rose-400 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 active:scale-95 cursor-pointer"
+                        id="lightbox-delete-btn"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                        {t('showcase.delete_btn')}
+                      </button>
+                    )}
+                  </div>
                   <a 
                     href={previewItem.url}
                     download={previewItem.title}

@@ -193,6 +193,15 @@ export const firestoreService = {
     } catch (error) {
       handleFirestoreError(error, OperationType.CREATE, path);
     }
+  },
+
+  deleteShowcaseItem: async (itemId: string) => {
+    const path = `showcase/${itemId}`;
+    try {
+      await deleteDoc(doc(db, 'showcase', itemId));
+    } catch (error) {
+      handleFirestoreError(error, OperationType.DELETE, path);
+    }
   }
 };
 
